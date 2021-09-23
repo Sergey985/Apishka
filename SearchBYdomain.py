@@ -1,4 +1,3 @@
-import numpy
 import csv
 from sqlalchemy import Column, Integer, Table, String, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base

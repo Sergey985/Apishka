@@ -1,9 +1,11 @@
 from Apishka import dnp_dev_details
 from Apishka import dnp_dev_calculate
-from Apishka import dnp_dev_calculation_from_DB
+from Apishka import start_evaluation_calculate
 from SearchBYdomain import add_domains_to_db
 from SearchBYdomain2 import search_malware_domains
 from SimateouslyEvaluation import start_evaluation
+
+
 print("Print 1 for start dnp dev recalculation")
 print("Print 2 for mass start dnp dev recalculation from DB")
 print("Print 3 for start dnp dev details")
@@ -19,7 +21,7 @@ val = int(input("Select method: "))
 if val == 1:
     dnp_dev_calculate()
 elif val == 2:
-    dnp_dev_calculation_from_DB()
+    start_evaluation_calculate()
 
 elif val == 3:
     dnp_dev_details()

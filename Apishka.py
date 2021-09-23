@@ -1,4 +1,5 @@
 import datetime
+import threading
 import time
 from sqlalchemy import Column, Integer, Table, String, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
@@ -9,13 +10,13 @@ import json
 from pygame import mixer
 mixer.init()
 mixer.music.load('MS.mp3')
-dom = 'zyrdu.cruisingsmallship.com'
+dom = 'hdhub.com'
 def dnp_dev_calculate():
     url = "https://core-api-dev-dnprotect.wecandevelopit.com/api/v1/rate/calculate"
 
     payload = json.dumps({
         "domain_name": dom,
-        'priority': '63'
+        "priority_value": 63
 
     })
     headers = {
@@ -56,7 +57,7 @@ def dnp_dev_calculation_from_DB():
         'Content-Type': 'application/json'
     }
     connection = engine.connect()
-    s = engine.execute('SELECT Domain FROM Domains limit 100')
+    s = engine.execute('SELECT Domain FROM Domains ORDER BY RANDOM() limit 100')
     i = 0
     for rowitem in s:
         i = i+1
@@ -67,23 +68,23 @@ def dnp_dev_calculation_from_DB():
         rowitem = rowitem.replace(")", "")
 
         payload = json.dumps({
-            "domain_name": rowitem
+            "domain_name": rowitem,
+            "priority_value": 63
         })
         response = requests.request("POST", url, headers=headers, data=payload)
         data = response.json()
-        t = datetime.datetime.now()
-        print("Start time:" + " " + str(t))
+
         print(response.text)
         print(response.status_code)
         while response.json()['status_value'] != 2:
             response = requests.request("POST", url, headers=headers, data=payload)
             i = i + 1
-            t1 = datetime.datetime.now()
-            t2 = t1 - t
-            print(str(t2) + " " + str(i) + " " + "Due operation. Recent status is:" + " " + str(
-                response.json()['status_value']))
-        else:
-            print("recalculated")
+
+
+            print(time.strftime("%H") + ":" + time.strftime("%M") + ":" + time.strftime("%S") + " " + str(i) + " " + "Domain is:" + " " + rowitem + " " + ". Recent status is:" + " " +
+                  str(response.json()['status_value']))
+
+    print("recalculated")
 
     mixer.music.play()
 
@@ -104,3 +105,19 @@ def dnp_dev_details():
     print(response.status_code)
     print(response.text)
     print(bing)
+
+def start_evaluation_calculate():
+
+    for i in range (100):
+        ts = "ts" + str(i)
+        ts = threading.Thread(target=dnp_dev_calculation_from_DB(), args=(0))
+        #ts = threading.Thread(target=dnp_dev_calculation_from_DB(), args=(1))
+        ts.start()
+
+        #ts1.start()
+
+        ts.join()
+        #ts1.join()
+
+        i=i+1
+
