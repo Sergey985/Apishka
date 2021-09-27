@@ -1,3 +1,4 @@
+import numpy
 from sqlalchemy import Column, Integer, Table, String, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, aliased, Query
@@ -47,8 +48,7 @@ def search_malware_domains():
         if malwarelist is not None:
             print(str(rowitem))
             print(malwarelist)
-        else:
-            print(rowitem + str(i))
+
     mixer.music.play()
 
 
