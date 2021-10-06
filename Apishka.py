@@ -10,14 +10,51 @@ from pygame import mixer
 import threading
 mixer.init()
 mixer.music.load('MS.mp3')
-dom = 'mtldesigns.ca'
+dom = 'Wikipedia.org'
 
-def dnp_dev_calculate():
-    url = "https://core-api-dev-dnprotect.wecandevelopit.com/api/v1/rate/calculate"
+
+
+def live_calculate():
+    url = "https://core-api.trustratings.com/api/v1/rate/calculate"
 
     payload = json.dumps({
         "domain_name": dom,
-        "priority_value": 63
+        "priority_value":-1
+
+    })
+    headers = {
+        'Content-Type': 'application/json'
+
+    }
+    i = 0
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+    except requests.exceptions.RequestException:
+        print(response)
+    t = datetime.datetime.now()
+    print("Start time:" + " " + str(t))
+    print(response.text)
+    print(response.status_code)
+    if not response:
+        print(response.status_code)
+
+    else:
+        while response.json()['status_value']!=2:
+           response = requests.request("POST", url, headers=headers, data=payload)
+           i=i+1
+           t1 = datetime.datetime.now()
+           t2 = t1 - t
+           print(str(t2) + " " + str(i) + " " + "Due operation. Recent status is:" + " " + str(response.json()['status_value']))
+        else:
+            print("recalculated")
+            mixer.music.play()
+
+def tr_demo_calculate():
+    url = "https://demo-core-api-trustratings.wecandevelopit.com/api/v1/rate/calculate"
+
+    payload = json.dumps({
+        "domain_name": dom,
+        "priority_value": -1
 
     })
     headers = {
@@ -30,15 +67,84 @@ def dnp_dev_calculate():
     print("Start time:" + " " + str(t))
     print(response.text)
     print(response.status_code)
-    while response.json()['status_value']!=2:
-          response = requests.request("POST", url, headers=headers, data=payload)
-          i=i+1
-          t1 = datetime.datetime.now()
-          t2 = t1 - t
-          print(str(t2) + " " + str(i) + " " + "Due operation. Recent status is:" + " " + str(response.json()['status_value']))
+    if response.ok:
+        while response.json()['status_value'] != 2:
+            try:
+                response = requests.request("POST", url, headers=headers, data=payload)
+            except requests.exceptions.RequestException:
+                print(response)
+            i = i + 1
+            t1 = datetime.datetime.now()
+            t2 = t1 - t
+            print(time.strftime("%H") + ":" + time.strftime("%M") + ":" + time.strftime("%S") + " " + str(
+                i) + " " + "Domain is:" + " " + dom + " " + ". Recent status is:" + " " +
+                  str(response.json()['status_value']))
+        else:
+            print("recalculated")
+
     else:
-        print("recalculated")
-        mixer.music.play()
+        print("Calculation for domain: " + str(dom) + " " + "wrong" + " " + str(response))
+mixer.music.play()
+
+
+def dnp_dev_calculate():
+    url = "https://core-api-dev-dnprotect.wecandevelopit.com/api/v1/rate/calculate"
+
+    payload = json.dumps({
+        "domain_name": dom,
+        "priority_value":-1
+
+    })
+    headers = {
+        'Content-Type': 'application/json'
+
+    }
+    i = 0
+    response = requests.request("POST", url, headers=headers, data=payload)
+    t = datetime.datetime.now()
+    print("Start time:" + " " + str(t))
+    print(response.text)
+    print(response.status_code)
+    if response.ok:
+        while response.json()['status_value'] != 2:
+            try:
+                response = requests.request("POST", url, headers=headers, data=payload)
+            except requests.exceptions.RequestException:
+                print(response)
+            i = i + 1
+            t1 = datetime.datetime.now()
+            t2 = t1 - t
+            print(time.strftime("%H") + ":" + time.strftime("%M") + ":" + time.strftime("%S") + " " + str(
+                i) + " " + "Domain is:" + " " + dom + " " + ". Recent status is:" + " " +
+                  str(response.json()['status_value']))
+        else:
+            print("recalculated")
+            mixer.music.play()
+    else:
+        print("Calculation for domain: " + str(dom) + " " + "wrong" + " " + str(response))
+def tr_demo_details():
+    url = "https://demo-core-api-trustratings.wecandevelopit.com/api/v1/rate/current/details"
+    payload = json.dumps({
+        "domain_name": dom
+    })
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+    except requests.exceptions.RequestException:
+        print(response)
+    if response.ok:
+        data = response.json()
+        findvalue = data['marks']
+        udrp = next((d for d in findvalue if d['key'] == 'udrp'), None)
+        bing = next((d for d in findvalue if d['key'] == 'bing'), None)
+        print(response.status_code)
+        print(response.text)
+        print(bing)
+    else:
+        print("Details for domain: " + str(dom) + " " + "wrong" + " " + str(response))
 
 def dnp_dev_details():
     url = "https://core-api-dev-dnprotect.wecandevelopit.com/api/v1/rate/current/details"
@@ -49,14 +155,20 @@ def dnp_dev_details():
         'Content-Type': 'application/json'
     }
 
-    response = requests.request("POST", url, headers=headers, data=payload)
-    data = response.json()
-    findvalue = data['marks']
-    udrp = next((d for d in findvalue if d['key'] == 'udrp'),None)
-    bing = next((d for d in findvalue if d['key'] == 'bing'), None)
-    print(response.status_code)
-    print(response.text)
-    print(bing)
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+    except requests.exceptions.RequestException:
+        print(response)
+    if response.ok:
+        data = response.json()
+        findvalue = data['marks']
+        udrp = next((d for d in findvalue if d['key'] == 'udrp'), None)
+        bing = next((d for d in findvalue if d['key'] == 'bing'), None)
+        print(response.status_code)
+        print(response.text)
+        print(bing)
+    else:
+        print("Details for domain: " + str(dom) + " " + "wrong" + " " + str(response))
 
 
 def dnp_dev_mass_calculation_from_DB():
@@ -92,7 +204,7 @@ def dnp_dev_mass_calculation_from_DB():
 
         payload = json.dumps({
             "domain_name": rowitem,
-            "priority_value":63
+            "priority_value":-1
         })
         response = requests.request("POST", url, headers=headers, data=payload)
         data = response.json()

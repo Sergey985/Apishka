@@ -21,7 +21,7 @@ def evaluationfromDB():
 
     url1 = "https://core-api.trustratings.com/api/v1/rate/current/details"
     url = "https://core-api.trustratings.com/api/v1/rate/calculate"
-    engine = create_engine('sqlite:///C:/DB/test4.db', echo=True)
+    engine = create_engine('sqlite:///C:/DB/test.db', echo=True)
     Base = declarative_base()
     Session = sessionmaker(bind=engine)
 
@@ -37,7 +37,7 @@ def evaluationfromDB():
         'Content-Type': 'application/json'
     }
     connection = engine.connect()
-    s = engine.execute('SELECT Domain FROM Domains Where id>44 limit 144')
+    s = engine.execute('SELECT Domain FROM Domains Where id>31543 limit 144')
 
     for rowitem in s:
 
@@ -65,28 +65,35 @@ def evaluationfromDB():
         print("Start time:" + " " + str(t))
         print(response.text)
         print(response.status_code)
-        while response.json()['status_value'] != 2:
-            try:
-                response = requests.request("POST", url, headers=headers, data=payload)
-            except requests.exceptions.RequestException:
-                print(response)
-            i = i + 1
-            t1 = datetime.datetime.now()
-            t2 = t1 - t
-            print(time.strftime("%H") + ":" + time.strftime("%M") + ":" + time.strftime("%S") + " " + str(
-                i) + " " + "Domain is:" + " " + rowitem + " " + ". Recent status is:" + " " +
-                  str(response.json()['status_value']))
-        else:
-            print("recalculated")
-            try:
-                response = requests.request("POST", url1, headers=headers, data=payload)
-            except requests.exceptions.RequestException:
-                print(response)
-            data = response.json()
-            t = datetime.datetime.now()
-            print("Start time:" + " " + str(t))
-            print(response.text)
-            print(response.status_code)
+        if response.ok:
+            while response.json()['status_value'] != 2:
+                try:
+                    response = requests.request("POST", url, headers=headers, data=payload)
+                except requests.exceptions.RequestException:
+                    print(response)
+                i = i + 1
+                t1 = datetime.datetime.now()
+                t2 = t1 - t
+                print(time.strftime("%H") + ":" + time.strftime("%M") + ":" + time.strftime("%S") + " " + str(
+                    i) + " " + "Domain is:" + " " + rowitem + " " + ". Recent status is:" + " " +
+                    str(response.json()['status_value']))
+            else:
+                print("recalculated")
+                try:
+                    response = requests.request("POST", url1, headers=headers, data=payload)
+                except requests.exceptions.RequestException:
+                    print(response)
+                data = response.json()
+                t = datetime.datetime.now()
+                print("Start time:" + " " + str(t))
+                print(response.text)
+                print(response.status_code)
+                findvalue = data['marks']
+
+                malwarelist = next((d for d in findvalue if d['key'] == 'blacklist_bing' and d['points'] != 0), None)
+                if malwarelist is not None:
+                    print(str(rowitem))
+                    print(malwarelist)
 
 
 def evaluationfromFile():
@@ -108,7 +115,7 @@ def evaluationfromFile():
         'Content-Type': 'application/json'
     }
     connection = engine.connect()
-    s = engine.execute('SELECT Domain FROM Domains WHERE id>145 LIMIT 200')
+    s = engine.execute('SELECT Domain FROM Domains where id>7 LIMIT 200')
 
     for rowitem in s:
 
@@ -120,7 +127,7 @@ def evaluationfromFile():
 
         payload = json.dumps({
             "domain_name": rowitem,
-            "priority_value": 63
+            "priority_value": -1
 
         })
         headers = {
@@ -136,34 +143,35 @@ def evaluationfromFile():
         print("Start time:" + " " + str(t))
         print(response.text)
         print(response.status_code)
-        while response.json()['status_value'] != 2:
-            try:
-                response = requests.request("POST", url, headers=headers, data=payload)
-            except requests.exceptions.RequestException:
-                print(response)
-            i = i + 1
-            t1 = datetime.datetime.now()
-            t2 = t1 - t
-            print(time.strftime("%H") + ":" + time.strftime("%M") + ":" + time.strftime("%S") + " " + str(
-                i) + " " + "Domain is:" + " " + rowitem + " " + ". Recent status is:" + " " +
-                  str(response.json()['status_value']))
-        else:
-            print("recalculated")
-            try:
-                response = requests.request("POST", url1, headers=headers, data=payload)
-            except requests.exceptions.RequestException:
-                print(response)
-            data = response.json()
-            t = datetime.datetime.now()
-            print("Start time:" + " " + str(t))
-            print(response.text)
-            print(response.status_code)
+        if response.ok:
+            while response.json()['status_value'] != 2:
+                try:
+                    response = requests.request("POST", url, headers=headers, data=payload)
+                except requests.exceptions.RequestException:
+                    print(response)
+                i = i + 1
+                t1 = datetime.datetime.now()
+                t2 = t1 - t
+                print(time.strftime("%H") + ":" + time.strftime("%M") + ":" + time.strftime("%S") + " " + str(
+                    i) + " " + "Domain is:" + " " + rowitem + " " + ". Recent status is:" + " " +
+                      str(response.json()['status_value']))
+            else:
+                print("recalculated")
+                try:
+                    response = requests.request("POST", url1, headers=headers, data=payload)
+                except requests.exceptions.RequestException:
+                    print(response)
+                data = response.json()
+                t = datetime.datetime.now()
+                print("Start time:" + " " + str(t))
+                print(response.text)
+                print(response.status_code)
+                findvalue = data['marks']
 
-
-
-
-
-
+                malwarelist = next((d for d in findvalue if d['key'] == 'blacklist_bing' and d['points'] != 0), None)
+                if malwarelist is not None:
+                    print(str(rowitem))
+                    print(malwarelist)
 
 def calc_s():
     t1=[]
